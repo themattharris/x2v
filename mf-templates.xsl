@@ -13,7 +13,7 @@
 		This work is licensed under The W3C Open Source License
 		http://www.w3.org/Consortium/Legal/copyright-software-19980720
 		
-		VERSION: 0.2
+		VERSION: 0.3
 	-->
 
 	<xsl:import href="datetime.xsl" />
@@ -260,30 +260,129 @@
 	
 	<!-- extract an ISO date from a Microformat property -->
 	<xsl:template name="mf:extractDate">
+		<xsl:param name="base-date"/>
+		<xsl:param name="base-tzid"/>
 		<xsl:choose>			
 			<!-- if the property is on an ABBR element check for @title -->
 			<xsl:when test='local-name(.) = "abbr" and @title'>
 				<xsl:call-template name="datetime:utc-time-converter">
-					<xsl:with-param name="time-string"><xsl:value-of select="normalize-space(@title)" /></xsl:with-param>
+				    <xsl:with-param name="base-date"><xsl:value-of select="$base-date" /></xsl:with-param>
+				    <xsl:with-param name="base-tzid"><xsl:value-of select="$base-tzid" /></xsl:with-param>
+					<xsl:with-param name="time-string">
+        				<xsl:call-template name="datetime:clock12-to-24">
+					        <xsl:with-param name="time-string">
+					            <xsl:value-of select="normalize-space(@title)" />
+    					    </xsl:with-param>
+    				    </xsl:call-template>
+					</xsl:with-param>
 				</xsl:call-template>
 			</xsl:when>
 			<!-- look on images -->
 			<xsl:when test='@longdesc and local-name(.) = "img"'>
 				<xsl:call-template name="datetime:utc-time-converter">
-					<xsl:with-param name="time-string"><xsl:value-of select="normalize-space(@longdesc)" /></xsl:with-param>
+				    <xsl:with-param name="base-date"><xsl:value-of select="$base-date" /></xsl:with-param>
+				    <xsl:with-param name="base-tzid"><xsl:value-of select="$base-tzid" /></xsl:with-param>
+					<xsl:with-param name="time-string">
+					    <xsl:call-template name="datetime:clock12-to-24">
+					        <xsl:with-param name="time-string">
+					            <xsl:value-of select="normalize-space(@longdesc)" />
+        					    </xsl:with-param>
+        				    </xsl:call-template>
+					</xsl:with-param>
 				</xsl:call-template>
 			</xsl:when>
 			<xsl:when test='@alt and (local-name(.) = "img" or local-name(.) = "area")'>
 				<xsl:call-template name="datetime:utc-time-converter">
-					<xsl:with-param name="time-string"><xsl:value-of select="normalize-space(@alt)" /></xsl:with-param>
+				    <xsl:with-param name="base-date"><xsl:value-of select="$base-date" /></xsl:with-param>
+				    <xsl:with-param name="base-tzid"><xsl:value-of select="$base-tzid" /></xsl:with-param>
+					<xsl:with-param name="time-string">
+					    <xsl:call-template name="datetime:clock12-to-24">
+					        <xsl:with-param name="time-string"> 
+						        <xsl:value-of select="normalize-space(@alt)" />
+					        </xsl:with-param>
+				        </xsl:call-template>
+					</xsl:with-param>
 				</xsl:call-template>
 			</xsl:when>
 			
 			<!-- should there be a look in for class="value"? -->
-				
+			<!-- check for value in child elements -->
+			<xsl:when test=".//*[contains(concat(' ', normalize-space(@class), ' '),' value ')]">
+				<xsl:call-template name="datetime:utc-time-converter">
+				    <xsl:with-param name="base-date"><xsl:value-of select="$base-date" /></xsl:with-param>
+				    <xsl:with-param name="base-tzid"><xsl:value-of select="$base-tzid" /></xsl:with-param>
+					<xsl:with-param name="time-string">
+					    <xsl:for-each select=".//*[contains(concat(' ', normalize-space(@class), ' '),' value ')]"> 
+					        <xsl:choose>
+					        	<xsl:when test="string-length(.) > 0 and string-length(normalize-space(.)) = 0">
+					        		<xsl:text> </xsl:text>
+					        	</xsl:when>
+					        	<!-- if the property is on an ABBR element check for @title -->
+					        	<xsl:when test='local-name(.) = "abbr" and @title'>
+					        	    <xsl:call-template name="datetime:clock12-to-24">
+                            	        <xsl:with-param name="time-string">
+					        		        <xsl:value-of select="translate(normalize-space(@title), ':' ,'')"/>
+				 	        	        </xsl:with-param>
+        			                </xsl:call-template>
+					        	</xsl:when>
+					        	<!-- if the property has an @title -->
+					        	<!--
+					        	<xsl:when test='@title'>
+					        	    <xsl:call-template name="datetime:clock12-to-24">
+                            	        <xsl:with-param name="time-string">
+					        		        <xsl:value-of select="translate(translate(normalize-space(@title), ':' ,''),'-','')"/>
+				 	        	        </xsl:with-param>
+        			                </xsl:call-template>
+					        	</xsl:when>
+				        	    -->
+					        	<!-- if the property is on an INPUT element check for @type=text -->
+					        	<xsl:when test='local-name(.) = "input" and @type = "text" and @value'>
+					        	    <xsl:call-template name="datetime:clock12-to-24">
+                            	        <xsl:with-param name="time-string">
+					        		        <xsl:value-of select="translate(normalize-space(@value), ':' ,'')"/>
+				 	        	        </xsl:with-param>
+        			                </xsl:call-template>
+					        	</xsl:when>
+					        	<!-- if the property is on an PRE element don't do anything with the white-space -->
+					        	<xsl:when test='local-name(.) = "pre"'>
+					        	    <xsl:call-template name="datetime:clock12-to-24">
+                            	        <xsl:with-param name="time-string">
+					        		        <xsl:value-of select="translate(translate(., ':' ,''),'-','')"/>
+				 	        	        </xsl:with-param>
+        			                </xsl:call-template>
+					        	</xsl:when>
+					        	<!-- if the property is on an IMG or AREA check the @alt -->
+					        	<xsl:when test='@alt and (local-name(.) = "img" or local-name(.) = "area")'>
+					        	    <xsl:call-template name="datetime:clock12-to-24">
+                            	        <xsl:with-param name="time-string">
+					        		        <xsl:value-of select="translate(normalize-space(@alt), ':' ,'')"/>
+				 	        	        </xsl:with-param>
+        			                </xsl:call-template>
+					        	</xsl:when>
+					        	<xsl:otherwise>
+					        	    <xsl:call-template name="datetime:clock12-to-24">
+                            	        <xsl:with-param name="time-string">
+					        		        <xsl:value-of select="translate(normalize-space(.), ':' ,'')"/>
+				 	        	        </xsl:with-param>
+        			                </xsl:call-template>
+					        	</xsl:otherwise>
+					        </xsl:choose>
+					    </xsl:for-each>
+					</xsl:with-param>
+				</xsl:call-template>
+			</xsl:when>
+							
 			<xsl:otherwise>
 				<xsl:call-template name="datetime:utc-time-converter">
-					<xsl:with-param name="time-string"><xsl:value-of select="normalize-space(.)" /></xsl:with-param>
+				    <xsl:with-param name="base-date"><xsl:value-of select="$base-date" /></xsl:with-param>
+				    <xsl:with-param name="base-tzid"><xsl:value-of select="$base-tzid" /></xsl:with-param>
+					<xsl:with-param name="time-string">
+					    <xsl:call-template name="datetime:clock12-to-24">
+					        <xsl:with-param name="time-string">
+					            <xsl:value-of select="normalize-space(.)" />
+				            </xsl:with-param>
+			            </xsl:call-template>
+					</xsl:with-param>
 				</xsl:call-template>
 			</xsl:otherwise>
 		</xsl:choose>		
@@ -562,6 +661,12 @@
 								</xsl:choose>
 							</xsl:for-each>
 						</xsl:when>
+						<!-- check for child attributes that might have value-title elements AFTER value -->
+						<xsl:when test=".//*[contains(concat(' ', normalize-space(@class), ' '),' value-title ')]">
+							<xsl:for-each select=".//*[contains(concat(' ', normalize-space(@class), ' '),' value-title ')]">
+								<xsl:value-of select="normalize-space(@title)"/>					
+							</xsl:for-each>
+						</xsl:when>
 						<xsl:when test=".//*[contains(concat(' ', normalize-space(@class), ' '),' type ')]">
 							<xsl:variable name="notType">
 								<xsl:for-each select="descendant::node()">
@@ -622,6 +727,12 @@
 							<xsl:value-of select="normalize-space(.)"/>
 						</xsl:otherwise>
 					</xsl:choose>					
+				</xsl:for-each>
+			</xsl:when>
+			<!-- check for child attributes that might have value-title elements AFTER value -->
+			<xsl:when test=".//*[contains(concat(' ', normalize-space(@class), ' '),' value-title ')]">
+				<xsl:for-each select=".//*[contains(concat(' ', normalize-space(@class), ' '),' value-title ')]">
+					<xsl:value-of select="normalize-space(@title)"/>					
 				</xsl:for-each>
 			</xsl:when>
 			<xsl:when test=".//*[contains(concat(' ', normalize-space(@class), ' '),' type ')]">
@@ -886,6 +997,14 @@
 					<xsl:if test="contains(translate(concat(' ', translate(@title,',',' '), ' '),$ucase,$lcase), concat(' ', $value, ' ')) = true()">
 						<xsl:value-of select="normalize-space($value)"/>
 					</xsl:if>
+				</xsl:when>
+				<!-- check for child attributes that might have value-title elements -->
+				<xsl:when test=".//*[contains(concat(' ', normalize-space(@class), ' '),' value-title ')]">
+					<xsl:for-each select=".//*[contains(concat(' ', normalize-space(@class), ' '),' value-title ')]">
+						<xsl:if test="contains(translate(concat(' ', translate(@title,',',' '), ' '),$ucase,$lcase), concat(' ', $value, ' ')) = true()">
+							<xsl:value-of select="normalize-space($value)"/>
+						</xsl:if>
+					</xsl:for-each>
 				</xsl:when>
 			</xsl:choose>
 		</xsl:for-each>

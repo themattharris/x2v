@@ -26,8 +26,8 @@ brian@suda.co.uk
 http://suda.co.uk/
 
 XHTML-2-vCard
-Version 0.11
-2007-05-29
+Version 0.12
+2009-04-29
 
 Copyright 2005 Brian Suda
 This work is relicensed under The W3C Open Source License
@@ -45,8 +45,7 @@ I'm not an XSLT expert, so there are no guarantees to quality of this code!
 -->
 
 
-
-<xsl:param name="Prodid" select='"-//suda.co.uk//X2V 0.11 (BETA)//EN"' />
+<xsl:param name="Prodid" select='"-//suda.co.uk//X2V 0.12 (BETA)//EN"' />
 <xsl:param name="Source" >(Best Practices states this should be the URL the vcard was transformed from)</xsl:param>
 <xsl:param name="Encoding" >UTF-8</xsl:param>
 <xsl:param name="Anchor" />
@@ -67,7 +66,7 @@ Without the correct profile you cannot assume the class values are intended for 
 
 <!-- Each vCard is listed in succession -->
 <xsl:template match="*[contains(concat(' ',normalize-space(@class),' '),' vcard ') and descendant::*[contains(concat(' ',normalize-space(@class),' '),' fn ')]]">
-	<xsl:if test="not($Anchor) or @id = $Anchor">		
+	<xsl:if test="not($Anchor) or ancestor-or-self::*/@id = $Anchor">		
 		<xsl:text>BEGIN:VCARD</xsl:text>
 		<xsl:text>&#x0D;&#x0A;PRODID:</xsl:text><xsl:value-of select="$Prodid"/>
 		<xsl:text>&#x0D;&#x0A;SOURCE:</xsl:text><xsl:value-of select="$Source"/>

@@ -23,8 +23,8 @@ brian@suda.co.uk
 http://suda.co.uk/
 
 XHTML-2-iCal
-Version 0.9.2.1
-2007-09-04
+Version 0.9.7
+2009-10-04
 
 Copyright 2005 Brian Suda
 This work is relicensed under The W3C Open Source License
@@ -36,7 +36,7 @@ Until the hCal spec has been finalised this is a work in progress.
 I'm not an XSLT expert, so there are no guarantees to quality of this code!
 
 -->
-<xsl:param name="Prodid">-//suda.co.uk//X2V 0.9.2.1 (BETA)//EN</xsl:param>
+<xsl:param name="Prodid">-//suda.co.uk//X2V 0.9.7 (BETA)//EN</xsl:param>
 <xsl:param name="Source">(Best Practice: should be URL that this was ripped from)</xsl:param>
 <xsl:param name="Anchor" />
 
@@ -65,7 +65,7 @@ I'm not an XSLT expert, so there are no guarantees to quality of this code!
 
 <!-- Add more templates as they are needed-->
 <xsl:template match="*[contains(concat(' ',normalize-space(@class),' '),' vevent ')]">
-	<xsl:if test="not($Anchor) or @id = $Anchor">
+	<xsl:if test="not($Anchor) or ancestor-or-self::*[@id = $Anchor]">
 		<xsl:text>&#x0D;&#x0A;BEGIN:VEVENT</xsl:text>
 
 		<xsl:call-template name="mf:doIncludes"/>
@@ -295,7 +295,35 @@ I'm not an XSLT expert, so there are no guarantees to quality of this code!
 			</xsl:call-template>
 		</xsl:if>
 	</xsl:for-each>
-
+	
+	<!-- useful variable in a few places -->
+	<xsl:variable name="bdate">
+        <xsl:for-each select=".//*[ancestor-or-self::*[local-name() = 'del'] = false() and contains(concat(' ', normalize-space(@class), ' '),' dtstart ')]">
+    		<xsl:if test="position() = 1">
+    		    <xsl:variable name="combined-date-time">
+    		        <xsl:call-template name="mf:extractText"/>
+    		    </xsl:variable>
+                <xsl:value-of select="substring(translate($combined-date-time,'-',''),1,8)"/>
+            </xsl:if>
+        </xsl:for-each>
+	</xsl:variable>
+	
+	<xsl:variable name="btzid">
+        <xsl:for-each select=".//*[ancestor-or-self::*[local-name() = 'del'] = false() and contains(concat(' ', normalize-space(@class), ' '),' dtstart ')]">
+    		<xsl:if test="position() = 1">
+    				<xsl:if test="substring-after(substring-after(.,'T'),'-') = true()">
+    				    <xsl:text>-</xsl:text><xsl:value-of select="substring-after(substring-after(.,'T'),'-')"/>
+    				</xsl:if>
+    				<xsl:if test="substring-after(substring-after(.,'T'),'+') = true()">
+    				    <xsl:text>+</xsl:text><xsl:value-of select="substring-after(substring-after(.,'T'),'+')"/>
+    				</xsl:if>
+    				<xsl:if test="substring-before(.,'Z') = true()">
+    				    <xsl:text>Z</xsl:text>
+    				</xsl:if>
+            </xsl:if>
+        </xsl:for-each>
+	</xsl:variable>
+	
 	<xsl:for-each select=".//*[ancestor-or-self::*[local-name() = 'del'] = false() and contains(concat(' ', normalize-space(@class), ' '),' dtstart ')]">
 		<xsl:if test="position() = 1">
 			<xsl:text>&#x0D;&#x0A;DTSTART</xsl:text>
@@ -327,7 +355,10 @@ I'm not an XSLT expert, so there are no guarantees to quality of this code!
 			<!-- TZID needs work! -->
 			<!-- check for date-time -->
 			<xsl:variable name="dtend">
-				<xsl:call-template name="mf:extractDate"/>
+				<xsl:call-template name="mf:extractDate">
+				    <xsl:with-param name="base-date"><xsl:value-of select="$bdate"/></xsl:with-param>
+				    <xsl:with-param name="base-tzid"><xsl:value-of select="$btzid"/></xsl:with-param>
+				</xsl:call-template>
 			</xsl:variable>
 			<xsl:choose>
 				<xsl:when test="string-length($dtend) = 8">
@@ -432,7 +463,7 @@ I'm not an XSLT expert, so there are no guarantees to quality of this code!
 	</xsl:for-each>	
 
 	<xsl:for-each select=".//*[ancestor-or-self::*[name() = 'del'] = false() and contains(concat(' ', normalize-space(@class), ' '),' geo ')]">
-		<xsl:text>&#x0D;&#x0D;&#x0A;GEO:</xsl:text>
+		<xsl:text>&#x0D;&#x0A;GEO:</xsl:text>
 		<xsl:variable name="geoData">
 			<xsl:call-template name="mf:extractGeo"/>
 		</xsl:variable>
@@ -679,8 +710,7 @@ I'm not an XSLT expert, so there are no guarantees to quality of this code!
 
 <!-- RELATED-TO property -->
 <xsl:template match="*[contains(@class,'related-to')]" mode="related-to">
-<xsl:text>
-RELATED-TO</xsl:text>
+<xsl:text>&#x0D;&#x0A;RELATED-TO</xsl:text>
 <xsl:if test="@rel != ''">
 <xsl:text>;</xsl:text><xsl:value-of select="@rel"/>
 </xsl:if>
@@ -711,10 +741,31 @@ RELATED-TO</xsl:text>
 
 <!-- ATTACH property -->
 <xsl:template match="*[contains(@class,'attach')]" mode="attach">
-<xsl:text>
-ATTACH</xsl:text>
+<xsl:text>&#x0D;&#x0A;ATTACH</xsl:text>
 
 <xsl:choose>
+	<xsl:when test="@data != ''">
+		<xsl:if test="@type">
+			<xsl:text>;FMTTYPE=</xsl:text><xsl:value-of select="@type"/>
+		</xsl:if>
+		<xsl:choose>
+			<xsl:when test="substring-before(@data,':') = 'http'">
+				<xsl:text>:</xsl:text><xsl:value-of select="@data" />
+			</xsl:when>
+			<xsl:when test="substring-before(@data,':') = 'data'">
+				<xsl:text>;ENCODING=BASE64;VALUE=BINARY:</xsl:text><xsl:value-of select="substring-after(@data,',')"/>
+			</xsl:when>
+			<xsl:when test="@data != ''">
+				<!-- probably need to make this absolute ONLY if no other protocol -->
+				<xsl:text>:</xsl:text>
+				<xsl:value-of select="@data"/>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:text>:</xsl:text><xsl:value-of select="normalize-space(.)"/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:when>
+
 	<xsl:when test="@href != ''">
 		<xsl:if test="@type">
 			<xsl:text>;FMTTYPE=</xsl:text><xsl:value-of select="@type"/>
@@ -724,7 +775,7 @@ ATTACH</xsl:text>
 				<xsl:text>:</xsl:text><xsl:value-of select="@href" />
 			</xsl:when>
 			<xsl:when test="substring-before(@href,':') = 'data'">
-				<xsl:text>;ENCODING=BASE64;VALUE=BINARY:</xsl:text><xsl:value-of select="substring-after(@src,',')"/>
+				<xsl:text>;ENCODING=BASE64;VALUE=BINARY:</xsl:text><xsl:value-of select="substring-after(@href,',')"/>
 			</xsl:when>
 			<xsl:when test="@href != ''">
 				<!-- probably need to make this absolute ONLY if no other protocol -->

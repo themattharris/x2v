@@ -6,7 +6,8 @@
  version="1.0"
 >
 
-<xsl:import href="../mf-templates.xsl" />
+<xsl:import 
+href="http://suda.co.uk/projects/microformats/mf-templates.xsl" />
 
 <xsl:output
   encoding="UTF-8"
@@ -35,17 +36,16 @@ http://www.w3.org/Consortium/Legal/copyright-software-19980720
 
 <xsl:template match="/">
 <data>
-	<xsl:apply-templates select=".//*[contains(concat(' ',normalize-space(@class),' '),' vevent ') and descendant::*[contains(concat(' ',normalize-space(@class),' '),' dtstart ')]]"/>
+	<xsl:for-each select=".//*[contains(concat(' ',normalize-space(@class),' '),' vevent ')]">
+		<xsl:if test="not($Anchor) or @id = $Anchor">
+			<xsl:call-template name="mf:doIncludes"/>
+			<xsl:call-template name="properties"/>
+		</xsl:if>
+	</xsl:for-each>
+
 </data>
 </xsl:template>
 
-<!-- Each vCard is listed in succession -->
-<xsl:template match="*[contains(concat(' ',normalize-space(@class),' '),' vevent ') and descendant::*[contains(concat(' ',normalize-space(@class),' '),' dtstart ')]]">
-	<xsl:if test="not($Anchor) or @id = $Anchor">
-		<xsl:call-template name="mf:doIncludes"/>
-		<xsl:call-template name="properties"/>
-	</xsl:if>
-</xsl:template>
 
 <xsl:template name="properties">
 	

@@ -24,8 +24,8 @@ brian@suda.co.uk
 http://suda.co.uk/
 
 XHTML-2-KML
-Version 0.4
-2007-06-29
+Version 0.5
+2008-03-08
 
 Copyright 2006 Brian Suda
 This work is relicensed under The W3C Open Source License
@@ -72,10 +72,6 @@ http://www.w3.org/Consortium/Legal/copyright-software-19980720
 	<xsl:variable name="latLon" select="common:node-set($latLon-RTF)" />
 	<name>
 	<xsl:choose>
-		<!-- if this is an abbr element, use the value -->
-		<xsl:when test="name() = 'abbr'">
-			<xsl:value-of select="."/>
-		</xsl:when>
 		<!-- if this is inside an hCard, use the hCard FN -->
 		<xsl:when test="ancestor::*[not(name() = 'del') = true() and contains(concat(' ', normalize-space(@class), ' '),' vcard ')]//*[not(name() = 'del') = true() and contains(concat(' ', normalize-space(@class), ' '),' fn ')]">
 			<xsl:for-each select="ancestor::*[not(name() = 'del') = true() and contains(concat(' ', normalize-space(@class), ' '),' vcard ')]//*[not(name() = 'del') = true() and contains(concat(' ', normalize-space(@class), ' '),' fn ')][1]">
@@ -88,6 +84,10 @@ http://www.w3.org/Consortium/Legal/copyright-software-19980720
 				<xsl:call-template name="mf:extractText" />
 			</xsl:for-each>
 		</xsl:when>
+		<!-- if this is an abbr element, use the value -->
+		<xsl:when test="name() = 'abbr'">
+			<xsl:value-of select="."/>
+		</xsl:when>
 		<!-- default: use the co-ordinates -->
 		<xsl:otherwise>
 			<xsl:value-of select="$latLon/longitude"/>
@@ -98,6 +98,58 @@ http://www.w3.org/Consortium/Legal/copyright-software-19980720
 		</xsl:otherwise>
 	</xsl:choose>
 	</name>
+
+	<!-- Add the optional description -->
+	<xsl:choose>
+		<!-- if this is inside an hCalendar, use the hCalendar Summary -->
+		<xsl:when test="ancestor::*[not(name() = 'del') = true() and contains(concat(' ', normalize-space(@class), ' '),' vevent ')]//*[not(name() = 'del') = true() and contains(concat(' ', normalize-space(@class), ' '),' summary ')]">
+			<description>
+				<xsl:for-each select="ancestor::*[not(name() = 'del') = true() and contains(concat(' ', normalize-space(@class), ' '),' vevent ')]//*[not(name() = 'del') = true() and contains(concat(' ', normalize-space(@class), ' '),' summary ')][1]">
+					<xsl:call-template name="mf:extractText" />
+					<xsl:text>&lt;br/&gt;</xsl:text>
+				</xsl:for-each>
+				<xsl:for-each select="ancestor::*[not(name() = 'del') = true() and contains(concat(' ', normalize-space(@class), ' '),' vevent ')]//*[not(name() = 'del') = true() and contains(concat(' ', normalize-space(@class), ' '),' dtstart ')][1]">
+					<xsl:text>Start: </xsl:text>
+					<xsl:call-template name="mf:extractDate" />
+					<xsl:text>&lt;br/&gt;</xsl:text>
+				</xsl:for-each>
+				<xsl:for-each select="ancestor::*[not(name() = 'del') = true() and contains(concat(' ', normalize-space(@class), ' '),' vevent ')]//*[not(name() = 'del') = true() and contains(concat(' ', normalize-space(@class), ' '),' dtend ')][1]">
+					<xsl:text>End: </xsl:text>
+					<xsl:call-template name="mf:extractDate" />
+					<xsl:text>&lt;br/&gt;</xsl:text>
+				</xsl:for-each>
+				
+				<xsl:for-each select="ancestor::*[not(name() = 'del') = true() and contains(concat(' ', normalize-space(@class), ' '),' vevent ')]//*[not(name() = 'del') = true() and contains(concat(' ', normalize-space(@class), ' '),' location ')][1]">
+					<xsl:text>Location: </xsl:text>
+					<xsl:call-template name="mf:extractDate" />
+					<xsl:text>&lt;br/&gt;</xsl:text>
+				</xsl:for-each>
+				
+				<!--
+				<xsl:for-each select="ancestor::*[not(name() = 'del') = true() and contains(concat(' ', normalize-space(@class), ' '),' vevent ')]//*[not(name() = 'del') = true() and contains(concat(' ', normalize-space(@class), ' '),' adr ')][1]">
+					<xsl:variable name="adrData" select="common:node-set($adrData-RTF)" />
+						<xsl:text>Location:&lt;br/&gt;</xsl:text>
+						<xsl:if test="$adrData/post-office-box">
+							<xsl:value-of select="$adrData/post-office-box"/>
+							<xsl:text>&lt;br/&gt;</xsl:text>
+						</xsl:if>
+					    <xsl:value-of select="$adrData/extended-address"/>
+					    <xsl:text>;</xsl:text>
+						<xsl:value-of select="$adrData/street-address"/>
+						<xsl:text>;</xsl:text>
+					    <xsl:value-of select="$adrData/locality"/>
+					    <xsl:text>;</xsl:text>
+					    <xsl:value-of select="$adrData/region"/>
+					    <xsl:text>;</xsl:text>
+					    <xsl:value-of select="$adrData/postal-code"/>
+					    <xsl:text>;</xsl:text>
+					    <xsl:value-of select="$adrData/country-name"/>
+						<xsl:text>&lt;br/&gt;</xsl:text>
+				</xsl:for-each>
+			-->
+			</description>
+		</xsl:when>
+	</xsl:choose>
 
 	<Point>
 		<coordinates>
