@@ -101,19 +101,19 @@ if ((substr($uri, 0,7) == "http://") || (substr($uri, 0,8) == "https://")) {
 	if (isset($_GET['filename'])){
 	  if ($_GET['filename'] != ''){ $logfile = $_GET['filename']; }
 	} else { 
-	  # look for the fullname so we can name the vcard
-	  preg_match_all( '/FN.*?:(.*)/i', $Str, &$matches);
-  	# we will get the matched line and all matches for our requested parameter
-  	# if we get more than 1 name we've got a group of vcards so name the file
-  	# after the domain.
-  	if ( count($matches[1]) > 2 ) {
-  	  $logfile = parse_url($uri);
-  	  $logfile = str_replace( '.', '-', $logfile['host'] );
-  	# else try and get the fn name
-  	} elseif ( ! $logfile = @trim($matches[1][0]) ) {
-  	  # failsafe x2v filename
-  	  $logfile = "X2V";
-  	}
+    # look for the fullname so we can name the vcard
+    preg_match_all( '/FN.*?:(.*)/i', $Str, &$matches);
+    # we will get the matched line and all matches for our requested parameter
+    # if we get more than 1 name we've got a group of vcards so name the file
+    # after the domain.
+    if ( count($matches[1]) > 2 ) {
+      $logfile = parse_url($uri);
+      $logfile = str_replace( '.', '-', $logfile['host'] );
+    # else try and get the fn name
+    } elseif ( ! $logfile = @trim($matches[1][0]) ) {
+      # failsafe x2v filename
+      $logfile = "X2V";
+    }
   }
 
   # get the filename encoding correct
