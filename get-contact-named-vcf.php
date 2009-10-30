@@ -97,7 +97,7 @@ if ((substr($uri, 0,7) == "http://") || (substr($uri, 0,8) == "https://")) {
   $Str = $xsl->transformToXML($doc);
 
   // check to see if a filename is specified
-  if ( empty( @$_GET['filename'] ) or strlen( @$_GET['filename'] > 0 ) ) {
+  if ( ( @$_GET['filename'] == NULL ) or strlen( @$_GET['filename'] > 0 ) ) {
     # look for the fullname so we can name the vcard
     preg_match_all( '/FN.*?:(.*)/i', $Str, &$matches);
     # we will get the matched line and all matches for our requested parameter
