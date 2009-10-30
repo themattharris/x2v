@@ -96,11 +96,8 @@ if ((substr($uri, 0,7) == "http://") || (substr($uri, 0,8) == "https://")) {
   $doc->formatOutput = true;
   $Str = $xsl->transformToXML($doc);
 
-
   // check to see if a filename is specified
-  if (isset($_GET['filename'])){
-    if ($_GET['filename'] != ''){ $logfile = $_GET['filename']; }
-  } else {
+  if ( empty( @$_GET['filename'] ) or strlen( @$_GET['filename'] > 0 ) ) {
     # look for the fullname so we can name the vcard
     preg_match_all( '/FN.*?:(.*)/i', $Str, &$matches);
     # we will get the matched line and all matches for our requested parameter
@@ -109,21 +106,27 @@ if ((substr($uri, 0,7) == "http://") || (substr($uri, 0,8) == "https://")) {
     if ( count($matches[1]) > 2 ) {
       $logfile = parse_url($uri);
       $logfile = str_replace( '.', '-', $logfile['host'] );
-    # else try and get the fn name
-    } elseif ( ! $logfile = @trim($matches[1][0]) ) {
-      # failsafe x2v filename
-      $logfile = "X2V";
+    } else {
+      # else try and get the fn name
+      $logfile = @trim($matches[1][0]);
     }
+  } else {
+    $logfile = $_GET['filename'];
   }
 
   # get the filename encoding correct
-  $logfile = utf8_decode( $logfile );
+  $logfile = str_replace( ' ', '-', utf8_decode( $logfile ) );
+  
+  if ( strlen( $logfile ) < 1 ) {
+    # failsafe x2v filename
+    $logfile = "X2V";
+  }
 
   if (FALSE == $Str){
     print 'No vCards found';
     //print '<!-- '.htmlentities($xml_string).' -->';
   } else {
-    header("Content-Disposition: attachment; filename=\"$logfile.$extension\"");
+    header("Content-Disposition: attachment; filename=$logfile.$extension");
   //  header("Content-Length: ".mb_strlen($Str)+1);
     header("Connection: close");
     header("Content-Type: $contentType; charset=".X2V_CHARSET."; name=$logfile.$extension");
