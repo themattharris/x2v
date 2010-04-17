@@ -333,7 +333,7 @@ I'm not an XSLT expert, so there are no guarantees to quality of this code!
 				<xsl:call-template name="mf:extractDate"/>
 			</xsl:variable>
 			<xsl:choose>
-				<xsl:when test="string-length($dtstart) = 8">
+				<xsl:when test="string-length(translate($dtstart,'-','')) = 8">
 					<xsl:text>;VALUE=DATE</xsl:text>
 				</xsl:when>
 				<xsl:otherwise>
@@ -356,12 +356,13 @@ I'm not an XSLT expert, so there are no guarantees to quality of this code!
 			<!-- check for date-time -->
 			<xsl:variable name="dtend">
 				<xsl:call-template name="mf:extractDate">
+				    <xsl:with-param name="date-exclusive">1</xsl:with-param>
 				    <xsl:with-param name="base-date"><xsl:value-of select="$bdate"/></xsl:with-param>
 				    <xsl:with-param name="base-tzid"><xsl:value-of select="$btzid"/></xsl:with-param>
 				</xsl:call-template>
 			</xsl:variable>
 			<xsl:choose>
-				<xsl:when test="string-length($dtend) = 8">
+				<xsl:when test="string-length(translate($dtend,'-','')) = 8">
 					<xsl:text>;VALUE=DATE</xsl:text>
 				</xsl:when>
 				<xsl:otherwise>

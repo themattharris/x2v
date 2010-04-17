@@ -12,7 +12,7 @@
 		Copyright 2006 Brian Suda
 		This work is licensed under The W3C Open Source License
 		http://www.w3.org/Consortium/Legal/copyright-software-19980720
-		
+
 		VERSION: 0.3
 	-->
 
@@ -29,7 +29,7 @@
 			<xsl:for-each select=".//*[contains(concat(' ', normalize-space(@class), ' '),' family-name ')]">
 				<xsl:element name="family-name">
 					<xsl:call-template name="mf:extractText"/>
-				</xsl:element>	
+				</xsl:element>
 			</xsl:for-each>
 		</xsl:element>
 		<xsl:element name="given-names">
@@ -39,7 +39,7 @@
 				</xsl:element>
 			</xsl:for-each>
 		</xsl:element>
-		
+
 		<xsl:element name="additional-names">
 			<xsl:for-each select=".//*[contains(concat(' ', normalize-space(@class), ' '),' additional-name ')]">
 				<xsl:element name="additional-name">
@@ -65,7 +65,7 @@
 		</xsl:element>
 
 	</xsl:template>
-	
+
 	<xsl:template name="mf:extractOrg">
 		<xsl:choose>
 			<xsl:when test=".//*[contains(concat(' ', @class, ' '), concat(' ', 'organization-name', ' '))]" >
@@ -85,14 +85,14 @@
 						<xsl:element name="organization-unit"><xsl:call-template name="mf:extractText"/></xsl:element>
 					</xsl:for-each>
 				</xsl:element>
-				
+
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:element name="organization-name"><xsl:call-template name="mf:extractText"/></xsl:element>
 			</xsl:otherwise>
-		</xsl:choose>		
+		</xsl:choose>
 	</xsl:template>
-	
+
 	<!-- Extract ADR Property for Microformats -->
 	<xsl:template name="mf:extractAdr">
 		<xsl:param name="type-list"/>
@@ -101,7 +101,7 @@
 				<xsl:with-param name="list"><xsl:value-of select="$type-list"/></xsl:with-param>
 			</xsl:call-template>
 		</xsl:element>
-		
+
 		<xsl:variable name="street-address">
 			<xsl:for-each select=".//*[contains(concat(' ', normalize-space(@class), ' '),' street-address ')]">
 				<xsl:if test="position() != 1">
@@ -143,14 +143,14 @@
 				</xsl:if>
 			</xsl:for-each>
 		</xsl:element>
-		
+
 		<xsl:element name="country-name">
 			<xsl:for-each select=".//*[contains(concat(' ', normalize-space(@class), ' '),' country-name ')]">
 				<xsl:if test="position() = 1">
 					<xsl:call-template name="mf:extractText"/>
 				</xsl:if>
 			</xsl:for-each>
-		</xsl:element>		
+		</xsl:element>
 
 		<xsl:element name="postal-code">
 			<xsl:for-each select=".//*[contains(concat(' ', normalize-space(@class), ' '),' postal-code ')]">
@@ -158,14 +158,14 @@
 					<xsl:call-template name="mf:extractText"/>
 				</xsl:if>
 			</xsl:for-each>
-		</xsl:element>		
+		</xsl:element>
 
 		<!-- call display Function -->
 		<xsl:element name="street-address"><xsl:value-of select="$street-address"/></xsl:element>
 		<xsl:element name="extended-address"><xsl:value-of select="$extended-address"/></xsl:element>
 		<xsl:element name="post-office-box"><xsl:value-of select="$post-office-box"/></xsl:element>
 	</xsl:template>
-	
+
 	<!-- Extract GEO Property for Microformats -->
 	<xsl:template name="mf:extractGeo">
 		<xsl:choose>
@@ -173,7 +173,7 @@
 				<xsl:variable name="longitude" select="normalize-space(substring-after(@title,';'))" />
 				<xsl:variable name="latitude" select="normalize-space(substring-before(@title,';'))" />
 				<xsl:variable name="altitude" select="0" />
-				
+
 				<xsl:element name="latitude">
 					<xsl:value-of select="$latitude"/>
 				</xsl:element>
@@ -182,7 +182,7 @@
 				</xsl:element>
 				<xsl:element name="altitude">
 					<xsl:value-of select="$altitude"/>
-				</xsl:element>				
+				</xsl:element>
 			</xsl:when>
 			<xsl:when test="local-name(.) = 'img' and @alt">
 				<xsl:variable name="longitude" select="normalize-space(substring-after(@alt,';'))" />
@@ -197,10 +197,10 @@
 				</xsl:element>
 				<xsl:element name="altitude">
 					<xsl:value-of select="$altitude"/>
-				</xsl:element>				
+				</xsl:element>
 			</xsl:when>
 			<!-- look for child elements -->
-			<xsl:otherwise>				
+			<xsl:otherwise>
 				<xsl:variable name="longitude">
 					<xsl:choose>
 						<xsl:when test=".//*[contains(concat(' ', normalize-space(@class), ' '),' longitude ')]">
@@ -225,10 +225,10 @@
 							<xsl:value-of select="normalize-space(substring-before(.,';'))"/>
 						</xsl:otherwise>
 					</xsl:choose>
-				</xsl:variable>				
+				</xsl:variable>
 
 				<xsl:variable name="altitude" select="0" />
-				
+
 				<!-- call display Function -->
 				<xsl:element name="latitude">
 					<xsl:value-of select="$latitude"/>
@@ -238,12 +238,12 @@
 				</xsl:element>
 				<xsl:element name="altitude">
 					<xsl:value-of select="$altitude"/>
-				</xsl:element>				
-				
+				</xsl:element>
+
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
-	
+
 	<!-- extract rel-Tags or text -->
 	<xsl:template name="mf:extractKeywords">
 		<xsl:choose>
@@ -257,15 +257,18 @@
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
-	
+
 	<!-- extract an ISO date from a Microformat property -->
 	<xsl:template name="mf:extractDate">
+		<xsl:param name="date-exclusive" select="0" />
 		<xsl:param name="base-date"/>
 		<xsl:param name="base-tzid"/>
-		<xsl:choose>			
+
+		<xsl:choose>
 			<!-- if the property is on an ABBR element check for @title -->
 			<xsl:when test='local-name(.) = "abbr" and @title'>
 				<xsl:call-template name="datetime:utc-time-converter">
+				    <xsl:with-param name="date-exclusive"><xsl:value-of select="$date-exclusive" /></xsl:with-param>
 				    <xsl:with-param name="base-date"><xsl:value-of select="$base-date" /></xsl:with-param>
 				    <xsl:with-param name="base-tzid"><xsl:value-of select="$base-tzid" /></xsl:with-param>
 					<xsl:with-param name="time-string">
@@ -280,6 +283,7 @@
 			<!-- look on images -->
 			<xsl:when test='@longdesc and local-name(.) = "img"'>
 				<xsl:call-template name="datetime:utc-time-converter">
+				    <xsl:with-param name="date-exclusive"><xsl:value-of select="$date-exclusive" /></xsl:with-param>
 				    <xsl:with-param name="base-date"><xsl:value-of select="$base-date" /></xsl:with-param>
 				    <xsl:with-param name="base-tzid"><xsl:value-of select="$base-tzid" /></xsl:with-param>
 					<xsl:with-param name="time-string">
@@ -293,26 +297,28 @@
 			</xsl:when>
 			<xsl:when test='@alt and (local-name(.) = "img" or local-name(.) = "area")'>
 				<xsl:call-template name="datetime:utc-time-converter">
+				    <xsl:with-param name="date-exclusive"><xsl:value-of select="$date-exclusive" /></xsl:with-param>
 				    <xsl:with-param name="base-date"><xsl:value-of select="$base-date" /></xsl:with-param>
 				    <xsl:with-param name="base-tzid"><xsl:value-of select="$base-tzid" /></xsl:with-param>
 					<xsl:with-param name="time-string">
 					    <xsl:call-template name="datetime:clock12-to-24">
-					        <xsl:with-param name="time-string"> 
+					        <xsl:with-param name="time-string">
 						        <xsl:value-of select="normalize-space(@alt)" />
 					        </xsl:with-param>
 				        </xsl:call-template>
 					</xsl:with-param>
 				</xsl:call-template>
 			</xsl:when>
-			
+
 			<!-- should there be a look in for class="value"? -->
 			<!-- check for value in child elements -->
 			<xsl:when test=".//*[contains(concat(' ', normalize-space(@class), ' '),' value ')]">
 				<xsl:call-template name="datetime:utc-time-converter">
+				    <xsl:with-param name="date-exclusive"><xsl:value-of select="$date-exclusive" /></xsl:with-param>
 				    <xsl:with-param name="base-date"><xsl:value-of select="$base-date" /></xsl:with-param>
 				    <xsl:with-param name="base-tzid"><xsl:value-of select="$base-tzid" /></xsl:with-param>
 					<xsl:with-param name="time-string">
-					    <xsl:for-each select=".//*[contains(concat(' ', normalize-space(@class), ' '),' value ')]"> 
+					    <xsl:for-each select=".//*[contains(concat(' ', normalize-space(@class), ' '),' value ')]">
 					        <xsl:choose>
 					        	<xsl:when test="string-length(.) > 0 and string-length(normalize-space(.)) = 0">
 					        		<xsl:text> </xsl:text>
@@ -371,9 +377,10 @@
 					</xsl:with-param>
 				</xsl:call-template>
 			</xsl:when>
-							
+
 			<xsl:otherwise>
 				<xsl:call-template name="datetime:utc-time-converter">
+				    <xsl:with-param name="date-exclusive"><xsl:value-of select="$date-exclusive" /></xsl:with-param>
 				    <xsl:with-param name="base-date"><xsl:value-of select="$base-date" /></xsl:with-param>
 				    <xsl:with-param name="base-tzid"><xsl:value-of select="$base-tzid" /></xsl:with-param>
 					<xsl:with-param name="time-string">
@@ -385,16 +392,16 @@
 					</xsl:with-param>
 				</xsl:call-template>
 			</xsl:otherwise>
-		</xsl:choose>		
+		</xsl:choose>
 	</xsl:template>
-	
-	
+
+
 	<!-- @@make this a proper MASKING function -->
 	<xsl:template name="mf:extractDateMask">
 		<xsl:variable name="unformatedDate">
 			<xsl:call-template name="mf:extractDate"/>
 		</xsl:variable>
-		
+
 		<!-- year -->
 		<xsl:value-of select="substring($unformatedDate,1,4)"/>
 		<xsl:text>-</xsl:text>
@@ -403,10 +410,10 @@
 		<xsl:text>-</xsl:text>
 		<!-- day -->
 		<xsl:value-of select="substring($unformatedDate,7,2)"/>
-		
+
 		<xsl:choose>
 			<xsl:when test="substring($unformatedDate,10,1) = 'T'">
-				<xsl:text>T</xsl:text>			
+				<xsl:text>T</xsl:text>
 				<!-- hours -->
 				<xsl:value-of select="substring($unformatedDate,11,2)"/>
 				<xsl:text>:</xsl:text>
@@ -421,7 +428,7 @@
 			</xsl:otherwise>
 		</xsl:choose>
 		<xsl:text>Z</xsl:text>
-				
+
 	</xsl:template>
 
 	<!-- extract an ISO date from a Microformat property -->
@@ -443,7 +450,7 @@
 					<xsl:with-param name="text-string"><xsl:value-of select="normalize-space(@alt)" /></xsl:with-param>
 				</xsl:call-template>
 			</xsl:when>
-			
+
 			<xsl:otherwise>
 				<xsl:call-template name="datetime:rdate-comma-utc">
 					<xsl:with-param name="text-string"><xsl:value-of select="normalize-space(.)" /></xsl:with-param>
@@ -451,7 +458,7 @@
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
-	
+
 	<xsl:template name="mf:extractEmail">
 		<!-- on hold -->
 	</xsl:template>
@@ -515,13 +522,13 @@
 			</xsl:when>
 			<xsl:when test='local-name(.) = "abbr" and @title'>
 				<xsl:value-of select="normalize-space(@title)"/>
-			</xsl:when>			
+			</xsl:when>
 			<xsl:otherwise>
 				<xsl:value-of select="normalize-space(.)"/>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
-	
+
 	<xsl:template name="mf:extractBlob">
 		<!-- @@ -->
 	</xsl:template>
@@ -547,13 +554,13 @@
 							<xsl:value-of select="normalize-space(substring-before(substring-after(.//*[contains(concat(' ', normalize-space(@class), ' '),' value ')]/@href,':'),'?'))" />
 						</xsl:otherwise>
 					</xsl:choose>
-				</xsl:if>				
+				</xsl:if>
 			</xsl:when>
 			<xsl:when test="
 				contains(
 				concat(' ', normalize-space($protocolList),' '),
 				concat(' ',
-				substring-before(@href,':'), 
+				substring-before(@href,':'),
 				' '))">
 				<xsl:choose>
 					<xsl:when test="string-length(normalize-space(substring-before(substring-after(@href,':'),'?'))) &lt; 1">
@@ -580,13 +587,13 @@
 							<xsl:value-of select="normalize-space(substring-before(substring-after(.//*[contains(concat(' ', normalize-space(@class), ' '),' value ')]/@data,':'),'?'))" />
 						</xsl:otherwise>
 					</xsl:choose>
-				</xsl:if>				
+				</xsl:if>
 			</xsl:when>
 			<xsl:when test="
 				contains(
 				concat(' ', normalize-space($protocolList),' '),
 				concat(' ',
-				substring-before(@data,':'), 
+				substring-before(@data,':'),
 				' '))">
 				<xsl:choose>
 					<xsl:when test="string-length(normalize-space(substring-before(substring-after(@data,':'),'?'))) &lt; 1">
@@ -596,7 +603,7 @@
 						<xsl:value-of select="normalize-space(substring-before(substring-after(@data,':'),'?'))" />
 					</xsl:otherwise>
 				</xsl:choose>
-			</xsl:when>			
+			</xsl:when>
 			<xsl:otherwise>
 				<xsl:call-template name="mf:extractText"/>
 			</xsl:otherwise>
@@ -617,11 +624,11 @@
 				<xsl:with-param name="protocolList"><xsl:value-of select="$protocol"/></xsl:with-param>
 			</xsl:call-template>
 		</xsl:variable>
-		
+
 		<xsl:element name="type" ><xsl:value-of select="$type" /></xsl:element>
 		<xsl:element name="value"><xsl:value-of select="$value"/></xsl:element>
 	</xsl:template>
-	
+
 	<!-- extract text from a Microformat property -->
 	<xsl:template name="mf:extractText">
 		<xsl:choose>
@@ -664,7 +671,7 @@
 						<!-- check for child attributes that might have value-title elements AFTER value -->
 						<xsl:when test=".//*[contains(concat(' ', normalize-space(@class), ' '),' value-title ')]">
 							<xsl:for-each select=".//*[contains(concat(' ', normalize-space(@class), ' '),' value-title ')]">
-								<xsl:value-of select="normalize-space(@title)"/>					
+								<xsl:value-of select="normalize-space(@title)"/>
 							</xsl:for-each>
 						</xsl:when>
 						<xsl:when test=".//*[contains(concat(' ', normalize-space(@class), ' '),' type ')]">
@@ -675,12 +682,12 @@
 									</xsl:if>
 								</xsl:for-each>
 							</xsl:variable>
-							<xsl:value-of select="normalize-space($notType)"/>				
+							<xsl:value-of select="normalize-space($notType)"/>
 						</xsl:when>
 						<xsl:otherwise>
 							<xsl:value-of select="normalize-space(.)"/>
 						</xsl:otherwise>
-					</xsl:choose>		
+					</xsl:choose>
 				</xsl:for-each>
 			</xsl:when>
 			<!-- if the property is on an ABBR element check for @title -->
@@ -726,13 +733,13 @@
 						<xsl:otherwise>
 							<xsl:value-of select="normalize-space(.)"/>
 						</xsl:otherwise>
-					</xsl:choose>					
+					</xsl:choose>
 				</xsl:for-each>
 			</xsl:when>
 			<!-- check for child attributes that might have value-title elements AFTER value -->
 			<xsl:when test=".//*[contains(concat(' ', normalize-space(@class), ' '),' value-title ')]">
 				<xsl:for-each select=".//*[contains(concat(' ', normalize-space(@class), ' '),' value-title ')]">
-					<xsl:value-of select="normalize-space(@title)"/>					
+					<xsl:value-of select="normalize-space(@title)"/>
 				</xsl:for-each>
 			</xsl:when>
 			<xsl:when test=".//*[contains(concat(' ', normalize-space(@class), ' '),' type ')]">
@@ -743,15 +750,15 @@
 						</xsl:if>
 					</xsl:for-each>
 				</xsl:variable>
-				<xsl:value-of select="normalize-space($notType)"/>				
+				<xsl:value-of select="normalize-space($notType)"/>
 			</xsl:when>
 			<!-- take the value of the child node -->
 			<xsl:otherwise>
-				<xsl:value-of select="normalize-space(.)"/>						
+				<xsl:value-of select="normalize-space(.)"/>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
-	
+
 	<xsl:template name="mf:doIncludes">
 		<!-- check for header="" and extract that data -->
 		<xsl:if test="descendant-or-self::*/@headers">
@@ -759,7 +766,7 @@
 				<xsl:with-param name="text-string"><xsl:value-of select="descendant-or-self::*/@headers"/></xsl:with-param>
 			</xsl:call-template>
 		</xsl:if>
-		
+
 		<!-- check for object/a elements with data references to IDs -->
 		<xsl:if test=".//*[not(ancestor-or-self::*[local-name() = 'del']) = true()] and .//*[not(descendant-or-self::*[local-name() = 'object' or local-name() = 'a']) = false() and (contains(normalize-space(@data),'#') or contains(normalize-space(@href),'#'))]">
 			<xsl:for-each select=".//*[not(descendant-or-self::*[local-name() = 'object']) = false() and contains(normalize-space(@data),'#') and contains(concat(' ',normalize-space(@class),' '),' include ')]">
@@ -776,7 +783,7 @@
 			</xsl:for-each>
 		</xsl:if>
 	</xsl:template>
-	
+
 	<!-- recursive function to extract headers="id id id" -->
 	<xsl:template name="mf:extract-ids">
 		<xsl:param name="text-string"/>
@@ -798,7 +805,7 @@
 	</xsl:template>
 
 	<!-- include the HTML where the id attribute matches -->
-	<xsl:template name="mf:get-header">		
+	<xsl:template name="mf:get-header">
 		<!-- problem here!? need to pass the tag WITH the id, not descendants -->
 		<xsl:param name="header-id"/>
 		<xsl:for-each select="//*[@id=$header-id]">
@@ -826,14 +833,14 @@
 					</xsl:with-param>
 				</xsl:call-template>
 			</xsl:when>
-			<xsl:when test="substring($text-string,string-length($text-string),1) = '/'">		
+			<xsl:when test="substring($text-string,string-length($text-string),1) = '/'">
 				<xsl:call-template name="mf:tagFromTagspace">
 					<xsl:with-param name="text-string">
 						<xsl:value-of select="substring($text-string,1,string-length($text-string)-1)"/>
 					</xsl:with-param>
 				</xsl:call-template>
 			</xsl:when>
-			<xsl:when test="not(substring-after($text-string,'/')) = false()">				
+			<xsl:when test="not(substring-after($text-string,'/')) = false()">
 				<xsl:call-template name="mf:tagFromTagspace">
 					<xsl:with-param name="text-string"><xsl:value-of select="substring-after($text-string,'/')"/></xsl:with-param>
 				</xsl:call-template>
@@ -888,7 +895,7 @@
 			<xsl:otherwise>
 				<xsl:value-of select="$Encoding"/>
 			</xsl:otherwise>
-		</xsl:choose>		
+		</xsl:choose>
 	</xsl:template>
 
 	<!-- Get the base URL for the page if there is one -->
@@ -904,33 +911,33 @@
 			<xsl:when test="not(//*[name() = 'base']) = false()">
 				<xsl:value-of select="//*[name() = 'base']/@href" />
 			</xsl:when>
-			
+
 			<!-- default to the one passed into the XSLT -->
 			<xsl:otherwise>
 				<xsl:value-of select="$Source" />
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
-	
+
 	<xsl:template name="mf:toUpper">
-		<xsl:param name="text-string" />		
+		<xsl:param name="text-string" />
 		<xsl:value-of select="translate(normalize-space($text-string),$lcase,$ucase)"/>
 	</xsl:template>
-	
+
 	<xsl:template name="mf:toLower">
 		<xsl:param name="text-string" />
 		<xsl:value-of select="translate(normalize-space($text-string),$ucase,$lcase)"/>
 	</xsl:template>
-	
+
 	<xsl:template name="mf:truncate">
 		<xsl:param name="text-string" />
 		<xsl:param name="string-length" />
 		<xsl:value-of select="substring(normalize-space($text-string),1,$string-length)"/>
 	</xsl:template>
-	
+
 	<xsl:template name="mf:dateISO2RFC">
 		<xsl:param name="iso-date"/>
-	
+
 		<xsl:choose>
 			<xsl:when test="substring($iso-date,5,2) = '01'">
 				<xsl:text>Jan</xsl:text>
@@ -970,21 +977,21 @@
 			</xsl:otherwise>
 		</xsl:choose>
 		<xsl:text> </xsl:text>
-		<xsl:value-of select="substring($iso-date,7,2)"/>	
+		<xsl:value-of select="substring($iso-date,7,2)"/>
 		<xsl:text> </xsl:text>
 		<xsl:value-of select="substring($iso-date,1,4)"/>
-		
+
 		<xsl:if test="string-length($iso-date) = 15">
 			<xsl:text> </xsl:text>
 			<xsl:value-of select="substring($iso-date,10,2)"/>
 			<xsl:text>:</xsl:text>
-			<xsl:value-of select="substring($iso-date,12,2)"/>		
+			<xsl:value-of select="substring($iso-date,12,2)"/>
 			<xsl:text>:</xsl:text>
 			<xsl:value-of select="substring($iso-date,14,2)"/>
 		</xsl:if>
 		<xsl:text> GMT</xsl:text>
 	</xsl:template>
-	
+
 	<!-- get the class value -->
 	<xsl:template name="mf:class-attribute-value">
 		<xsl:param name="value" />
@@ -1053,6 +1060,6 @@
 				<xsl:value-of select="$ff" />
 			</xsl:otherwise>
 		</xsl:choose>
-	</xsl:template>	
-	
+	</xsl:template>
+
 </xsl:transform>
